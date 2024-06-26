@@ -10,11 +10,13 @@ import Header from "@editorjs/header";
 import { useCallback, useEffect, useRef, useState } from "react";
 import LinkTool from "@editorjs/link";
 import List from "@editorjs/list";
+import ImageTool from "@editorjs/image";
 import Code from "@editorjs/code";
+import Quote from "@editorjs/quote";
 import { Post } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { postPatchSchema, postPatchSchemaType } from "@/lib/varidations/post";
+import { postPatchSchema, postPatchSchemaType } from "@/lib/validations/post";
 import { toast } from "./ui/use-toast";
 import { Icon } from "./icon";
 
@@ -27,6 +29,38 @@ export default function Editor({ post }: EditorProps) {
   const [isMounted, setIsMounted] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const router = useRouter();
+  const postId = post.id;
+  const [published, setPublished] = useState<boolean>(post.published);
+
+  const togglePublished = async () => {
+    const response = await fetch("/api/posts/publish", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: postId,
+        published: !published,
+      }),
+    });
+
+    if (response.ok) {
+      const updatedPost = await response.json();
+      setPublished(updatedPost.published);
+      toast({
+        description: `投稿が${
+          updatedPost.published ? "公開" : "非公開"
+        }になりました。`,
+      });
+    } else {
+      console.error("Failed to update post");
+      toast({
+        title: "エラー",
+        description: "投稿の更新に失敗しました。もう一度お試しください。",
+        variant: "destructive",
+      });
+    }
+  };
 
   const initializeEditor = useCallback(async () => {
     const body = postPatchSchema.parse(post);
@@ -34,15 +68,40 @@ export default function Editor({ post }: EditorProps) {
       holder: "editor",
       onReady() {
         ref.current = editor;
+        console.log("Editor.js is ready");
       },
       placeholder: "ここに記事を書く",
-      inlineToolbar: true,
+      inlineToolbar: ["link", "bold", "italic"],
       data: body.content,
       tools: {
         header: Header,
-        linkTool: LinkTool,
+        linkTool: {
+          class: LinkTool,
+          config: {
+            endpoint: "/api/link-preview",
+          },
+        },
         list: List,
         code: Code,
+        image: {
+          class: ImageTool,
+          config: {
+            endpoints: {
+              byFile: "/api/post-image-upload",
+              // byUrl: "/api/post-image-uploadByUrl",
+            },
+            field: "image",
+            types: "image/*",
+          },
+        },
+        quote: {
+          class: Quote,
+          inlineToolbar: true,
+          config: {
+            quotePlaceholder: "引用を入力",
+            captionPlaceholder: "引用の作者",
+          },
+        },
       },
     });
   }, [post]);
@@ -96,7 +155,7 @@ export default function Editor({ post }: EditorProps) {
 
     router.refresh();
 
-    return toast({
+    toast({
       description: "正常に保存されました。",
     });
   };
@@ -112,7 +171,9 @@ export default function Editor({ post }: EditorProps) {
             >
               戻る
             </Link>
-            <p className="text-sm text-muted-foreground">公開</p>
+            <button type="button" onClick={togglePublished} className="text-sm">
+              {published ? "非公開" : "公開"}
+            </button>
           </div>
           <button className={cn(buttonVariants())} type="submit">
             {isSaving && <Icon.spinner className="w-4 h-4 mr-2 animate-spin" />}
@@ -129,14 +190,10 @@ export default function Editor({ post }: EditorProps) {
             {...register("title")}
           />
         </div>
-        <div id="editor" className="min-h-[500px]" />
-        <p className="text-sm text-gary-500">
-          Use
-          <kbd className="rounded-md border bg-muted px-1 text-xs uppercase">
-            Tab
-          </kbd>
-          to open the command menu
-        </p>
+        <div
+          id="editor"
+          className="min-h-[500px] bg-white p-4 rounded-lg shadow-md"
+        />
       </div>
     </form>
   );

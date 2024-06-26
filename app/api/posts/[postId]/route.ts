@@ -1,6 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { postPatchSchema } from "@/lib/varidations/post";
+import { postPatchSchema } from "@/lib/validations/post";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -29,6 +29,7 @@ export async function PATCH(
       data: {
         title: body.title,
         content: body.content,
+        updatedAt: new Date(),
       },
     });
 

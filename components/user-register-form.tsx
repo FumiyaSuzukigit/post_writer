@@ -8,27 +8,44 @@ import { Icon } from "./icon";
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { signUpSchema, signUpSchemaType } from "@/lib/validations/signup";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "./ui/use-toast";
-import { signInSchema } from "@/lib/validations/signin";
 import { z } from "zod";
 
-type FormData = z.infer<typeof signInSchema>;
+type FormData = z.infer<typeof signUpSchema>;
 
-export default function UserAuthForm() {
+export default function UserRegisterForm() {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isGithubLoading, setIsGithubLoading] = useState<boolean>(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(signInSchema),
+  } = useForm<signUpSchemaType>({
+    resolver: zodResolver(signUpSchema),
   });
 
   async function onSubmit(data: FormData) {
     setIsLoading(true);
+
+    const response = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      return toast({
+        title: "サインアップに失敗しました",
+        description: "サインアップに失敗しました、もう一度お試し下さい",
+        variant: "destructive",
+      });
+    }
 
     const signInResult = await signIn("credentials", {
       email: data.email.toLowerCase(),
@@ -38,7 +55,6 @@ export default function UserAuthForm() {
     });
 
     if (!signInResult?.ok) {
-      setIsLoading(false);
       return toast({
         title: "サインインに失敗しました",
         description: "ログイン画面よりログインをお試し下さい",
@@ -48,11 +64,21 @@ export default function UserAuthForm() {
       window.location.href = "/dashboard";
     }
   }
+
   return (
     <div className="grid gap-6">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid gap-2">
           <div className="grid gap-1">
+            <Label htmlFor="name">名前</Label>
+            <Input
+              id="name"
+              placeholder="ヤマダ タロウ"
+              type="text"
+              required
+              {...register("name")}
+            />
+            {errors.name && <span>{errors.name.message}</span>}
             <Label htmlFor="email">メールアドレス</Label>
             <Input
               id="email"
@@ -61,17 +87,20 @@ export default function UserAuthForm() {
               required
               {...register("email")}
             />
+            {errors.email && <span>{errors.email.message}</span>}
             <Label htmlFor="password">パスワード</Label>
             <Input
               id="password"
+              placeholder="6文字以上必要"
               type="password"
               required
               {...register("password")}
             />
+            {errors.password && <span>{errors.password.message}</span>}
           </div>
           <button className={cn(buttonVariants())}>
             {isLoading && <Icon.spinner className="mr-2 animate-spin" />}
-            ログイン
+            アカウント作成
           </button>
         </div>
       </form>

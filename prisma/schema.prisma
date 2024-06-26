@@ -51,6 +51,7 @@ model User {
   email         String?   @unique
   emailVerified DateTime?
   image         String?
+  hashedPassword String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
@@ -82,7 +83,7 @@ model Post{
   content Json?
   published Boolean @default(false)
   createdAt DateTime @default(now()) @map(name:"created_at")
-  updatedAt          DateTime  @default(now()) @map(name:"updated_at")
+  updatedAt          DateTime  @updatedAt @map(name: "updated_at")
   authorId String
   author User      @relation(fields: [authorId], references: [id])
 

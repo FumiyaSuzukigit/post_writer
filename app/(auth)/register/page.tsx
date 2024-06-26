@@ -1,7 +1,8 @@
 import { buttonVariants } from "@/components/ui/button";
-import UserAuthForm from "@/components/user-auth-form";
+import UserRegisterForm from "@/components/user-register-form";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+
 
 export default function Register() {
   return (
@@ -25,7 +26,7 @@ export default function Register() {
             メールアドレスを入力でアカウントの作成をして下さい。
           </p>
         </div>
-        <UserAuthForm />
+        <UserRegisterForm />
         <p className="text-center text-muted-foreground px-8 text-sm">
           続けてクリックすれば、私達の
           <Link href={"/terms"} className="underline underline-offset-4">

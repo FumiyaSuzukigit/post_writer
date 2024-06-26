@@ -2,8 +2,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import PostsList from "@/components/posts-list";
 
-export default function IndexPage() {
+export default async function IndexPage() {
   return (
     <>
       <section className="pt-6 md:pt-10 lg:py-32 pb-8 md:pb-12">
@@ -37,6 +38,20 @@ export default function IndexPage() {
               Github
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="container py-8 md:py-12 lg:py-24" id="post">
+        <div className="max-w-[52rem] mx-auto flex flex-col gap-2">
+          <div>
+            <div className="space-y-4">
+              <h1 className="font-extrabold text-4xl lg:text-5xl tracking-tight">
+                投稿記事
+              </h1>
+            </div>
+          </div>
+          <hr className="my-2" />
+          <PostsList allList={false} />
         </div>
       </section>
 

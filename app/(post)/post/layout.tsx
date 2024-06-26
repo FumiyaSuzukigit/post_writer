@@ -8,7 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import UserIcon from "@/components/user-icon";
 
-export default async function MarketingLayout({
+export default async function PostLayout({
   children,
 }: {
   children: React.ReactNode;

@@ -14,6 +14,9 @@ export default function DashboardHeader({
       <div className="grid gap-1">
         <h1 className="text-3xl font-extrabold md:text-4xl">{heading}</h1>
         {text && <p className="text-lg text-muted-foreground">{text}</p>}
+        <p className="text-red-500">
+          ※試験運用中の為、投稿は予告なく削除する場合があります
+        </p>
       </div>
       {children}
     </div>
